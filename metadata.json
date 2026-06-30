@@ -1,0 +1,5 @@
+{
+  "name": "MABET Romaneo",
+  "description": "Herramienta móvil para el conteo de tablones de madera y cálculo de volumen total (pies tablares) por especie, espesor, ancho y largo.",
+  "requestFramePermissions": ["geolocation"]
+}

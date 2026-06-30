@@ -1,0 +1,22 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  --color-brand-primary: #A0AB4D;
+  --color-brand-secondary: #715C2A;
+}
+
+body {
+  @apply bg-slate-50 text-brand-secondary font-sans antialiased;
+  overscroll-behavior-y: contain;
+}
+
+input[type="range"] {
+  @apply h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-brand-primary;
+}
+
+.tap-active:active {
+  @apply scale-95 transition-transform duration-75;
+}

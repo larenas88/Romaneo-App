@@ -1,0 +1,94 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile and role information",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "displayName": { "type": "string" },
+        "role": { "type": "string", "enum": ["admin", "user", "supervisor"] },
+        "canUseAserradero": { "type": "boolean" },
+        "canUsePlaya": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email", "role"]
+    },
+    "Species": {
+      "title": "Species",
+      "description": "List of wood species",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" }
+      },
+      "required": ["name"]
+    },
+    "Measurement": {
+      "title": "Measurement",
+      "description": "Configurable widths, thicknesses, and lengths",
+      "type": "object",
+      "properties": {
+        "widths": { "type": "array", "items": { "type": "number" } },
+        "thicknesses": { "type": "array", "items": { "type": "number" } },
+        "lengths": { "type": "array", "items": { "type": "number" } }
+      }
+    },
+    "Romaneo": {
+      "title": "Romaneo",
+      "description": "Saved wood plank counts",
+      "type": "object",
+      "properties": {
+        "packageId": { "type": "string" },
+        "species": { "type": "string" },
+        "aserradero": { "type": "string", "enum": ["1", "3"] },
+        "op": { "type": "string" },
+        "date": { "type": "string" },
+        "thickness": { "type": "number" },
+        "counts": { "type": "object" },
+        "lines": { 
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "string" },
+              "timestamp": { "type": "string", "format": "date-time" },
+              "thickness": { "type": "number" },
+              "length": { "type": "number" },
+              "width": { "type": "number" },
+              "volume": { "type": "number" },
+              "category": { "type": "string" }
+            }
+          }
+        },
+        "totalVolume": { "type": "number" },
+        "largaVolume": { "type": "number" },
+        "cortaVolume": { "type": "number" },
+        "fingerVolume": { "type": "number" },
+        "totalPieces": { "type": "number" },
+        "createdBy": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["packageId", "species", "aserradero", "date", "totalVolume", "createdBy"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profiles"
+    },
+    "/config/species": {
+      "schema": "Species",
+      "description": "Wood species list"
+    },
+    "/config/measurements": {
+      "schema": "Measurement",
+      "description": "App measurements configuration"
+    },
+    "/romaneos/{romaneoId}": {
+      "schema": "Romaneo",
+      "description": "Saved romaneo records"
+    }
+  }
+}

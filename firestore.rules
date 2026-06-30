@@ -1,0 +1,99 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    // Collection: users
+    // Document ID: {userId}
+    // Fields:
+    //   - uid: string (required)
+    //   - email: string (required)
+    //   - displayName: string (optional)
+    //   - role: string (required, 'admin' or 'user')
+    //   - createdAt: timestamp (optional)
+    //
+    // Collection: config
+    // Document ID: species, measurements
+    // Fields:
+    //   - name: string (for species)
+    //   - widths: list<number> (for measurements)
+    //   - thicknesses: list<number> (for measurements)
+    //
+    // Collection: romaneos
+    // Document ID: {romaneoId}
+    // Fields:
+    //   - packageId: string (required)
+    //   - species: string (required)
+    //   - date: string (required)
+    //   - thickness: number (required)
+    //   - counts: map (required)
+    //   - totalVolume: number (required)
+    //   - largaVolume: number (required)
+    //   - cortaVolume: number (required)
+    //   - fingerVolume: number (required)
+    //   - totalPieces: number (required)
+    //   - createdBy: string (required, userId)
+    //   - createdAt: timestamp (required)
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && 
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+         request.auth.token.email == "arenaslou@gmail.com");
+    }
+
+    function hasOnlyAllowedFields(fields) {
+      return request.resource.data.keys().hasOnly(fields);
+    }
+
+    function isSupervisor() {
+      return isAuthenticated() && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'supervisor';
+    }
+
+    function isValidUser(data) {
+      return data.uid is string && data.uid.size() > 0 &&
+             data.email is string && data.email.size() > 0 &&
+             data.role in ['admin', 'user', 'supervisor'];
+    }
+
+    function isValidRomaneo(data) {
+      return data.packageId is string && data.packageId.size() > 0 &&
+             data.species is string && data.species.size() > 0 &&
+             data.totalVolume is number &&
+             data.createdBy == request.auth.uid;
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && (isOwner(userId) || isAdmin());
+      allow update: if isAuthenticated() && (isAdmin() || (isOwner(userId) && request.resource.data.role == resource.data.role));
+    }
+
+    match /config/{configId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    match /romaneos/{romaneoId} {
+      allow read: if isAdmin() || isSupervisor() || (isAuthenticated() && resource.data.createdBy == request.auth.uid);
+      allow create: if isAuthenticated() && isValidRomaneo(request.resource.data);
+      allow update, delete: if isAdmin() || (isAuthenticated() && resource.data.createdBy == request.auth.uid);
+    }
+  }
+}
